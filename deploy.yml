@@ -3,11 +3,49 @@ kind: FlinkDeployment
 metadata:
   name: flink-cdc-iceberg
 spec:
-  image: abyssnlp/flink-cdc-iceberg:0.1
+  image: abyssnlp/flink-cdc-iceberg:0.2
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
+    s3.access.key: hloGTnOVD3Al5cVlVlvE
+    s3.secret.key: 9o2VTSV8r6H6spTEwP5mY8WnWvaOXTsRZSfzfrCb
+    s3.endpoint: http://minio.minio.svc.cluster.local:9000
+    s3.path.style.access: "true"
+    s3.entropy.key: _entropy_
+    s3.entropy.length: "4"
+
+    execution.checkpointing.interval: "5000"
+
+    state.backend: rocksdb
+    state.backend.incremental: "true"
+    state.checkpoints.dir: s3://flink-logs/checkpoints
+    state.savepoints.dir: s3://flink-logs/savepoints
+
+    high-availability.type: kubernetes
+    high-availability.storageDir: s3://flink-logs/ha
   serviceAccount: flink
+  podTemplate:
+    spec:
+      containers:
+        - name: flink-main-container
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: flink-cdc-iceberg-secret
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: KAFKA_GROUP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: flink-cdc-iceberg-secret
+                  key: KAFKA_GROUP_ID
+            - name: KAFKA_CDC_TOPICS
+              valueFrom:
+                secretKeyRef:
+                  name: flink-cdc-iceberg-secret
+                  key: KAFKA_CDC_TOPICS
+            - name: ENABLE_BUILT_IN_PLUGINS
+              value: "flink-s3-fs-presto-1.20.1.jar"
   jobManager:
     resource:
       memory: "2Gi"
@@ -19,4 +57,4 @@ spec:
   job:
     jarURI: local:///opt/flink-jobs/flink-cdc-iceberg-1.0.jar
     parallelism: 1
-    upgradeMode: stateless
+    upgradeMode: savepoint
