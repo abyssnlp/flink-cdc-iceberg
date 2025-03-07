@@ -3,7 +3,7 @@ kind: FlinkDeployment
 metadata:
   name: flink-cdc-iceberg
 spec:
-  image: abyssnlp/flink-cdc-iceberg:0.2
+  image: abyssnlp/flink-cdc-iceberg:0.3
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
@@ -44,6 +44,21 @@ spec:
                 secretKeyRef:
                   name: flink-cdc-iceberg-secret
                   key: KAFKA_CDC_TOPICS
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: flink-cdc-iceberg-secret
+                  key: S3_ENDPOINT
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flink-cdc-iceberg-secret
+                  key: S3_ACCESS_KEY
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: flink-cdc-iceberg-secret
+                  key: S3_SECRET_KEY
             - name: ENABLE_BUILT_IN_PLUGINS
               value: "flink-s3-fs-presto-1.20.1.jar"
   jobManager:

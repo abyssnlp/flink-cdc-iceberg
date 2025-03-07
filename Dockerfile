@@ -1,6 +1,7 @@
 FROM maven:3-eclipse-temurin-17 as build
 
 COPY pom.xml .
+RUN mvn dependency:resolve
 RUN mvn dependency:go-offline
 
 COPY . .
