@@ -14,8 +14,6 @@ import org.apache.flink.types.RowKind;
 import org.apache.flink.util.Collector;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 
 public class DebeziumJsonDeserializer implements DeserializationSchema<RowData> {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -28,7 +26,7 @@ public class DebeziumJsonDeserializer implements DeserializationSchema<RowData> 
 
     @Override
     public RowData deserialize(byte[] message) throws IOException {
-        if(message == null) {
+        if (message == null) {
             return null;
         }
 
@@ -48,12 +46,12 @@ public class DebeziumJsonDeserializer implements DeserializationSchema<RowData> 
 
             rowData.setField(0, dataNode.path("id").asInt());
             rowData.setField(1, StringData.fromString(dataNode.path("name").asText()));
-            rowData.setField(2, LocalDate.parse(dataNode.path("date_of_joining").asText()).toEpochDay());
-            rowData.setField(3, TimestampData.fromTimestamp(Timestamp.valueOf(dataNode.path("updated_at").asText())));
+            rowData.setField(2, dataNode.path("date_of_joining").asInt());
+            rowData.setField(3, TimestampData.fromEpochMillis(dataNode.path("updated_at").asLong() / 1000));
             rowData.setField(4, StringData.fromString(dataNode.path("address").asText()));
 
             return rowData;
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new IOException("Failed to deserialize debezium JSON message ", e);
         }
     }
