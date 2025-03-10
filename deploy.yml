@@ -14,7 +14,13 @@ spec:
     s3.entropy.key: _entropy_
     s3.entropy.length: "4"
 
-    execution.checkpointing.interval: "5000"
+    #    execution.checkpointing.interval: "5000"
+    execution.checkpointing.externalized-checkpoint-retention: "RETAIN_ON_CANCELLATION"
+
+    # restart strategy
+    restart-strategy: fixed-delay
+    restart-strategy.fixed-delay.attempts: "3"
+    restart-strategy.fixed-delay.delay: "30s"
 
     state.backend: rocksdb
     state.backend.incremental: "true"
@@ -23,6 +29,11 @@ spec:
 
     high-availability.type: kubernetes
     high-availability.storageDir: s3://flink-logs/ha
+
+    # logging
+    logging.level.root: INFO
+    logging.level.org.apache.flink: DEBUG
+    logging.level.org.apache.kafka: DEBUG
   serviceAccount: flink
   podTemplate:
     spec:
@@ -67,7 +78,7 @@ spec:
       cpu: 1
   taskManager:
     resource:
-      memory: "4Gi"
+      memory: "8Gi"
       cpu: 1
   job:
     jarURI: local:///opt/flink-jobs/flink-cdc-iceberg-1.0.jar

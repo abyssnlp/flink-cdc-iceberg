@@ -39,10 +39,11 @@ public class Main {
         final String warehousePath = "s3a://data/";
 
         // exactly-once processing
-        env.enableCheckpointing(30000, CheckpointingMode.EXACTLY_ONCE);
+        env.enableCheckpointing(120000, CheckpointingMode.EXACTLY_ONCE);
         env.getCheckpointConfig().setMinPauseBetweenCheckpoints(5000);
-        env.getCheckpointConfig().setCheckpointTimeout(60000);
+        env.getCheckpointConfig().setCheckpointTimeout(120000);
         env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
+        env.getCheckpointConfig().setTolerableCheckpointFailureNumber(3);
 
 
         if (kafkaBootstrapServers == null) {
@@ -69,6 +70,7 @@ public class Main {
                 .fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source")
                 .uid("kafka-cdc-source")
                 .name("Debezium CDC Source");
+
 
         // TODO: placeholder for transformations (if any)
 
