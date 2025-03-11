@@ -6,7 +6,7 @@ import random
 fake = Faker()
 
 # Create SQL file
-with open('customer_data.sql', 'w') as f:
+with open('sql/customer_data.sql', 'w') as f:
     # Write create table statement
     f.write("""
 CREATE TABLE IF NOT EXISTS customers (

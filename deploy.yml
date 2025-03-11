@@ -17,6 +17,39 @@ spec:
     #    execution.checkpointing.interval: "5000"
     execution.checkpointing.externalized-checkpoint-retention: "RETAIN_ON_CANCELLATION"
 
+    # taskmanager memory
+    taskmanager.memory.process.size: "10g"
+    taskmanager.memory.task.heap.size: "6g"
+    taskmanager.memory.managed.size: "2g"
+    taskmanager.memory.network.min: "512m"
+    taskmanager.memory.network.max: "512m"
+    taskmanager.memory.framework.heap.size: "512m"
+    taskmanager.memory.framework.off-heap.size: "256m"
+    taskmanager.memory.jvm-overhead.min: "512m"
+
+    # Network buffer configuration
+    taskmanager.network.memory.buffers-per-channel: "8"
+    taskmanager.network.memory.floating-buffers-per-gate: "64"
+    taskmanager.network.detailed-metrics: "true"
+    metrics.latency.interval: "30000"
+    metrics.latency.history-size: "60"
+
+    heartbeat.timeout: "300000"
+    heartbeat.interval: "10000"
+    pekko.ask.timeout: "600s"
+
+    # JVM parameters
+    env.java.opts: >-
+      -XX:+UseG1GC 
+      -XX:MaxGCPauseMillis=100 
+      -XX:+HeapDumpOnOutOfMemoryError 
+      -XX:HeapDumpPath=/tmp/heap-dump.hprof
+      -XX:G1HeapRegionSize=4m
+      -XX:+ExitOnOutOfMemoryError
+      -XX:+ParallelRefProcEnabled
+      -XX:+DisableExplicitGC
+
+
     # restart strategy
     restart-strategy: fixed-delay
     restart-strategy.fixed-delay.attempts: "3"
@@ -24,6 +57,8 @@ spec:
 
     state.backend: rocksdb
     state.backend.incremental: "true"
+    state.backend.rocksdb.memory.managed: "true"
+    state.backend.rocksdb.use-bloom-filter: "true"
     state.checkpoints.dir: s3://flink-logs/checkpoints
     state.savepoints.dir: s3://flink-logs/savepoints
 
@@ -32,8 +67,8 @@ spec:
 
     # logging
     logging.level.root: INFO
-    logging.level.org.apache.flink: DEBUG
-    logging.level.org.apache.kafka: DEBUG
+    logging.level.org.apache.flink: INFO
+    logging.level.org.apache.kafka: INFO
   serviceAccount: flink
   podTemplate:
     spec:
@@ -78,8 +113,8 @@ spec:
       cpu: 1
   taskManager:
     resource:
-      memory: "8Gi"
-      cpu: 1
+      memory: "10Gi"
+      cpu: 2
   job:
     jarURI: local:///opt/flink-jobs/flink-cdc-iceberg-1.0.jar
     parallelism: 1

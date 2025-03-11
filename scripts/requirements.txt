@@ -1,2 +1,3 @@
 faker
-duckdb
+pyiceberg[s3fs,sql-sqlite,hive]
+pyspark==3.5.0

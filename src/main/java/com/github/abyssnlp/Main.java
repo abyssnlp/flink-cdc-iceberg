@@ -92,9 +92,10 @@ public class Main {
                 hadoopConf
         );
 
+
         FlinkSink.forRowData(sourceStream)
                 .tableLoader(tableLoader)
-                .writeParallelism(2)
+                .writeParallelism(1)
                 .upsert(true)
                 .equalityFieldColumns(List.of("id", "updated_at"))
                 .append();
