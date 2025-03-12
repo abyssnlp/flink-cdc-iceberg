@@ -1,3 +1,4 @@
 faker
 pyiceberg[s3fs,sql-sqlite,hive]
 pyspark==3.5.0
+psycopg2-binary

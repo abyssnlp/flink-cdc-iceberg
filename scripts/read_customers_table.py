@@ -28,7 +28,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Read Iceberg table
-df = spark.sql("SELECT * FROM iceberg.default_database.customers where id=10000")
+df = spark.sql("SELECT * FROM iceberg.default_database.customers where id between 1 and 100")
 df.show(truncate=False)
 
 # Stop the Spark session
