@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 class PostgresUpdater:
     def __init__(
-        self,
-        dbname: str,
-        user: str,
-        password: str,
-        host: str = "localhost",
-        port: int = 5432,
+            self,
+            dbname: str,
+            user: str,
+            password: str,
+            host: str = "localhost",
+            port: int = 5432,
     ):
         self.dbname = dbname
         self.user = user
@@ -50,7 +50,7 @@ class PostgresUpdater:
         logger.info("Disconnected from the database")
 
     def update_records(
-        self, table: str, update_record: Dict[str, Any], where: Optional[str] = None
+            self, table: str, update_record: Dict[str, Any], where: Optional[str] = None
     ) -> int:
         if not self.conn or self.conn.closed:
             self.connect()
@@ -70,10 +70,17 @@ class PostgresUpdater:
 
 
 if __name__ == "__main__":
+    import os
     import faker
 
     fake = faker.Faker()
-    updater = PostgresUpdater("airflow", "airflow", "airflow", "localhost", 5432)
+    updater = PostgresUpdater(
+        dbname=os.getenv("POSTGRES_DB"),
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        host=os.getenv("POSTGRES_HOST"),
+        port=os.getenv("POSTGRES_PORT"),
+    )
 
     for i in range(100):
         update_record = {

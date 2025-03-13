@@ -19,8 +19,8 @@ spark = SparkSession.builder \
     .config("spark.sql.catalog.iceberg.type", "hadoop") \
     .config("spark.sql.catalog.iceberg.warehouse", "s3a://data") \
     .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:9000") \
-    .config("spark.hadoop.fs.s3a.access.key", "hloGTnOVD3Al5cVlVlvE") \
-    .config("spark.hadoop.fs.s3a.secret.key", "9o2VTSV8r6H6spTEwP5mY8WnWvaOXTsRZSfzfrCb") \
+    .config("spark.hadoop.fs.s3a.access.key", os.getenv("S3_ACCESS_KEY")) \
+    .config("spark.hadoop.fs.s3a.secret.key", os.getenv("S3_SECRET_KEY")) \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
     .config("spark.sql.defaultCatalog", "iceberg") \
