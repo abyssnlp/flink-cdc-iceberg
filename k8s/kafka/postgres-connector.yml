@@ -1,0 +1,19 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: postgres-connector
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: debezium-connect-cluster
+spec:
+  class: io.debezium.connector.postgresql.PostgresConnector
+  tasksMax: 1
+  config:
+    tasks.max: 1
+    database.hostname: postgres-postgresql.default.svc.cluster.local
+    database.port: 5432
+    database.user: ${secrets:kafka/debezium-secret:username}
+    database.password: ${secrets:kafka/debezium-secret:password}
+    database.dbname: airflow
+    topic.prefix: postgres1
+    tombstones.on.delete: true

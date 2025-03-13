@@ -2,8 +2,59 @@ Flink CDC to Iceberg
 ===
 
 This project is a simple example of how to use Flink to consume CDC events from a Postgres database and write them to an
-Iceberg table.
+Iceberg table. It accompanies the blog post [here](https://unskewdata.com/blog/flink-cdc-iceberg).
 All components are running on a local Kubernetes cluster.
+
+## Pre-requisites
+
+The following tools are required to run this project:
+
+- Docker
+- Docker desktop (for local Kubernetes cluster)
+- Helm
+- Kubectl
+
+## Infrastructure setup
+
+We are going to use the local kubernetes cluster to run the following components. All manifests
+are in the `k8s` [directory](./k8s).
+
+- Postgres database (Debezium requires the `decoderbufs` plugin. We will have to build a custom image
+  with the plugin installed)
+
+```shell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install postgres -f helm/postgres/values.yaml bitnami/postgresql --version 15.5.35
+```
+
+- Minio (S3 compatible storage)
+
+```shell
+# pvc, service, deployment
+kubectl apply -f s3/
+```
+
+- Flink operator
+
+```shell
+helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
+kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
+helm install -f flink/values.yml flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator
+```
+
+- Kafka and Kafka connect (Strimzi)
+
+```shell
+curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.20.0/install.sh | bash -s v0.20.0
+kubectl create -f https://operatorhub.io/install/strimzi-kafka-operator.yaml
+kubectl apply -f kafka/db-secrets.yml
+kubectl apply -f kafka/connector-config-role.yml
+kubectl apply -f kafka/connector-role-binding.yml
+kubectl apply -f kafka/kafka-node-pool.yml
+kubectl apply -f kafka/kafka-cluster.yml # kafka cluster with kraft (3.9.0)
+kubectl apply -f kafka/kafka-connect-cluster.yml # kafka connect cluster
+kubectl apply -f kafka/postgres-connector.yml # postgres connector
+```
 
 ```shell
 docker buildx build -f Dockerfile -t flink-cdc-iceberg:0.1 .

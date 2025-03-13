@@ -1,0 +1,37 @@
+auth:
+  database: airflow
+  password: flinkcdciceberg
+  username: flinkcdciceberg
+  postgresPassword: postgres
+  enablePostgresUser: true
+  existingSecret: ""
+
+# global:
+#   security:
+#     allowInsecureImages: true
+
+image:
+  registry: docker.io
+  repository: abyssnlp/postgres-decoderbufs-15
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+
+persistence:
+  size: "1Gi"
+
+metrics:
+  enabled: false
+
+primary:
+  configuration: |
+    wal_level = logical
+    max_replication_slots = 4
+    max_wal_senders = 4
+    wal_log_hints = true
+    listen_addresses = '*'
+    shared_preload_libraries = 'decoderbufs'
