@@ -56,6 +56,23 @@ kubectl apply -f kafka/kafka-connect-cluster.yml # kafka connect cluster
 kubectl apply -f kafka/postgres-connector.yml # postgres connector
 ```
 
+## Running the Flink job
+
+The flink job can be deployed on k8s using the following command:
+
+```shell
+# secrets first as we provide them as env vars to the flink job
+kubectl apply -f secrets.yml
+# deploy the flink job
+kubectl apply -f deploy.yml
+# port-forward the flink job to access the web ui
+kubectl port-forward svc/flink-cdc-iceberg 8081:8081
+```
+
+More details on generating the data, setting up the CDC, building and deploying the
+flink application, querying the iceberg table and updating records can be found in
+the [blog post](https://unskewdata.com/blog/flink-cdc-iceberg).
+
 ```shell
 docker buildx build -f Dockerfile -t flink-cdc-iceberg:0.1 .
 docker tag flink-cdc-iceberg:0.1 abyssnlp/flink-cdc-iceberg:0.1 

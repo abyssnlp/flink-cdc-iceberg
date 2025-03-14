@@ -3,7 +3,8 @@ kind: FlinkDeployment
 metadata:
   name: flink-cdc-iceberg
 spec:
-  image: abyssnlp/flink-cdc-iceberg:0.3
+  #  image: abyssnlp/flink-cdc-iceberg:0.3
+  image: ${FLINK_IMAGE}
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "2"
