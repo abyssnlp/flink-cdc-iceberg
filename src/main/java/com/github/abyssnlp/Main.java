@@ -44,15 +44,7 @@ public class Main {
         env.getCheckpointConfig().setCheckpointTimeout(120000);
         env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
         env.getCheckpointConfig().setTolerableCheckpointFailureNumber(3);
-
-
-        if (kafkaBootstrapServers == null) {
-            throw new IllegalArgumentException("KAFKA_BOOTSTRAP_SERVERS environment variable is not set");
-        } else if (kafkaGroupId == null) {
-            throw new IllegalArgumentException("KAFKA_GROUP_ID environment variable is not set");
-        } else if (kafkaTopicsString == null) {
-            throw new IllegalArgumentException("KAFKA_TOPICS environment variable is not set");
-        }
+        
 
         List<String> kafkaTopics = Arrays.stream(kafkaTopicsString.split(",")).toList();
         KafkaSource<RowData> source = KafkaSource.<RowData>builder()
