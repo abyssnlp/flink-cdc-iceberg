@@ -19,41 +19,18 @@ The following tools are required to run this project:
 We are going to use the local kubernetes cluster to run the following components. All manifests
 are in the `k8s` [directory](./k8s).
 
-- Postgres database (Debezium requires the `decoderbufs` plugin. We will have to build a custom image
-  with the plugin installed)
-
-```shell
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install postgres -f helm/postgres/values.yaml bitnami/postgresql --version 15.5.35
-```
-
-- Minio (S3 compatible storage)
-
-```shell
-# pvc, service, deployment
-kubectl apply -f s3/
-```
-
+- Postgres database
+- Minio (S3)
 - Flink operator
+- Kafka operator
+- Kafka cluster
+- Kafka connect cluster
+- Postgres connector
+
+To set up the infrastructure:
 
 ```shell
-helm repo add flink-operator-repo https://downloads.apache.org/flink/flink-kubernetes-operator-1.10.0/
-kubectl create -f https://github.com/jetstack/cert-manager/releases/download/v1.8.2/cert-manager.yaml
-helm install -f flink/values.yml flink-kubernetes-operator flink-operator-repo/flink-kubernetes-operator
-```
-
-- Kafka and Kafka connect (Strimzi)
-
-```shell
-curl -sL https://github.com/operator-framework/operator-lifecycle-manager/releases/download/v0.20.0/install.sh | bash -s v0.20.0
-kubectl create -f https://operatorhub.io/install/strimzi-kafka-operator.yaml
-kubectl apply -f kafka/db-secrets.yml
-kubectl apply -f kafka/connector-config-role.yml
-kubectl apply -f kafka/connector-role-binding.yml
-kubectl apply -f kafka/kafka-node-pool.yml
-kubectl apply -f kafka/kafka-cluster.yml # kafka cluster with kraft (3.9.0)
-kubectl apply -f kafka/kafka-connect-cluster.yml # kafka connect cluster
-kubectl apply -f kafka/postgres-connector.yml # postgres connector
+make setup-infra
 ```
 
 ## Running the Flink job
@@ -61,26 +38,64 @@ kubectl apply -f kafka/postgres-connector.yml # postgres connector
 The flink job can be deployed on k8s using the following command:
 
 ```shell
-# secrets first as we provide them as env vars to the flink job
-kubectl apply -f secrets.yml
-# deploy the flink job
-kubectl apply -f deploy.yml
-# port-forward the flink job to access the web ui
-kubectl port-forward svc/flink-cdc-iceberg 8081:8081
+make deploy-flink-job
 ```
+
+To remove the flink job:
+
+```shell
+make remove-flink-job
+```
+
+## Troubleshooting Infrastructure setup
+
+1. If the postgres chart fails to install due to the custom image, you can uncomment this in the
+   `k8s/postgres/values.yaml` file.
+
+```shell
+ global:
+   security:
+     allowInsecureImages: true
+```
+
+2. For the Kafka connect cluster here: `k8s/kafka/kafka-connect-cluster.yml`, if you do not want to build and push the
+   debezium base image with
+   the postgres plugin, you can use my pre-built image that is already pushed to docker hub. The manifest would become
+   something like this:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: debezium-connect-cluster
+  namespace: kafka
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  version: 3.9.0
+  image: abyssnlp/debezium-connect-postgresql:latest
+  replicas: 1
+  bootstrapServers: kluster-kafka-bootstrap:9092
+  config:
+    config.providers: secrets
+    config.providers.secrets.class: io.strimzi.kafka.KubernetesSecretConfigProvider
+    group.id: connect-cluster
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
+    # -1 means fallback to the broker settings
+    config.storage.replication.factor: -1
+    offset.storage.replication.factor: -1
+    status.storage.replication.factor: -1
+```
+
+3. If deploying the Flink job fails at the `iceberg-setup` task or if you don't have Apache Maven locally installed, you
+   can open the
+   `com.github.abyssnlp.setup.IcebergSetup`
+   class on your IDE and run the main method. This will create the iceberg table and schema.
+
+---
 
 More details on generating the data, setting up the CDC, building and deploying the
 flink application, querying the iceberg table and updating records can be found in
 the [blog post](https://unskewdata.com/blog/flink-cdc-iceberg).
-
-```shell
-docker buildx build -f Dockerfile -t flink-cdc-iceberg:0.1 .
-docker tag flink-cdc-iceberg:0.1 abyssnlp/flink-cdc-iceberg:0.1 
-docker push abyssnlp/flink-cdc-iceberg:0.1
-
-# spark iceberg jars
-wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
-wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
-wget https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.5.0/iceberg-spark-runtime-3.5_2.12-1.5.0.jar
-wget https://repo1.maven.org/maven2/io/minio/minio/8.5.7/minio-8.5.7.jar
-```
