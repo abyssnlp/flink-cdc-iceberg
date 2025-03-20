@@ -56,7 +56,7 @@ ensure-venv:
 
 db-setup: ensure-venv
 	@echo "Creating tables and seeding data, make sure to have pg running and relevant values populated in the script"
-	python scripts/datagen.py
+	@. venv/bin/activate &&python scripts/datagen.py
 
 iceberg-setup:
 	@echo "Creating iceberg table, make sure to have S3(minio) running and relevant ports forwarded")
