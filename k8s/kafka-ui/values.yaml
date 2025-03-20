@@ -1,0 +1,10 @@
+yamlApplicationConfig:
+  kafka:
+    clusters:
+      - name: kluster
+        bootstrapServers: kluster-kafka-bootstrap:9092
+        kafkaConnect:
+          - name: debezium-connect-cluster
+            address: http://debezium-connect-cluster-connect:8083
+  auth:
+    type: disabled

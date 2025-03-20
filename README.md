@@ -25,6 +25,7 @@ are in the `k8s` [directory](./k8s).
 - Kafka operator
 - Kafka cluster
 - Kafka connect cluster
+- Kafka UI (Provectus)
 - Postgres connector
 
 To set up the infrastructure:

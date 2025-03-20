@@ -39,7 +39,12 @@ setup-kafka: ensure-kubectl-helm
     kubectl apply -f k8s/kafka/kafka-connect-cluster.yml && \
     kubectl apply -f k8s/kafka/postgres-connector.yml
 
-setup-infra: setup-postgres setup-s3 setup-flink-operator setup-kafka
+setup-kafka-ui: ensure-kubectl-helm
+	@echo "Setting up Kafka UI"
+	helm repo add kafka-ui https://provectus.github.io/kafka-ui-charts && \
+    helm -n kafka install kafka-ui -f k8s/kafka-ui/values.yaml kafka-ui/kafka-ui
+
+setup-infra: setup-postgres setup-s3 setup-flink-operator setup-kafka setup-kafka-ui
 	@echo "Infrastructure setup complete"
 
 env-setup:
@@ -56,7 +61,7 @@ ensure-venv:
 
 db-setup: ensure-venv
 	@echo "Creating tables and seeding data, make sure to have pg running and relevant values populated in the script"
-	@. venv/bin/activate &&python scripts/datagen.py
+	@. venv/bin/activate && python scripts/datagen.py
 
 iceberg-setup:
 	@echo "Creating iceberg table, make sure to have S3(minio) running and relevant ports forwarded")
