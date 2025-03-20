@@ -14,6 +14,6 @@ spec:
     database.port: 5432
     database.user: ${secrets:kafka/debezium-secret:username}
     database.password: ${secrets:kafka/debezium-secret:password}
-    database.dbname: airflow
+    database.dbname: cdciceberg
     topic.prefix: postgres1
     tombstones.on.delete: true
