@@ -2,7 +2,7 @@ Flink CDC to Iceberg
 ===
 
 This project is a simple example of how to use Flink to consume CDC events from a Postgres database and write them to an
-Iceberg table. It accompanies the blog post [here](https://unskewdata.com/blog/flink-cdc-iceberg).
+Iceberg table. It accompanies the blog post [here](https://unskewdata.com/blog/stream-flink-3).
 All components are running on a local Kubernetes cluster.
 
 ## Pre-requisites
